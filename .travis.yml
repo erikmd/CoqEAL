@@ -31,15 +31,18 @@ install:
 - opam repo add coq-released https://coq.inria.fr/opam/released || true
 - opam update
 - opam repo list
-- echo -e 'travis_fold:start:mathcomp.build' && echo -e '\e[33;1mBuilding Coq and Mathcomp\e[0m'
-- opam install -j ${NJOBS} -y -v ocamlfind camlp5 coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}
+- echo -e 'travis_fold:start:coq.build' && echo -e '\e[33;1mBuilding Coq\e[0m'
+- opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION}
+- echo -e 'travis_fold:end:coq.build'
+- echo -e 'travis_fold:start:mathcomp.build' && echo -e '\e[33;1mBuilding Mathcomp\e[0m'
+- opam install -j ${NJOBS} -y -v coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}
 - echo -e 'travis_fold:end:mathcomp.build'
 - opam list
 - echo -e 'travis_fold:start:paramcoq.build' && echo -e '\e[33;1mBuilding Paramcoq\e[0m'
 # Some branches have no paramcoq dir & paramcoq isn't Coq-version cross-compat.
 # if [ ! -d paramcoq ]; then git clone --depth 50 -n ${PARAMCOQ_URL} paramcoq && pushd paramcoq && git checkout ${PARAMCOQ_VERSION} && popd; fi
 - git clone --depth 50 -n ${PARAMCOQ_URL} $HOME/paramcoq && pushd $HOME/paramcoq && git checkout ${PARAMCOQ_VERSION} && popd
-- $HOME/pushd paramcoq && make -j ${NJOBS} && make install && popd
+- pushd $HOME/paramcoq && make -j ${NJOBS} && make install && popd
 - echo -e 'travis_fold:end:paramcoq.build'
 - echo -e 'travis_fold:start:multinom.build' && echo -e '\e[33;1mBuilding Multinomials\e[0m'
 - git clone --depth 50 -n ${MULTINOM_URL} $HOME/multinom && pushd $HOME/multinom && git checkout ${MULTINOM_VERSION} && popd

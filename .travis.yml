@@ -53,5 +53,5 @@ script:
 - echo -e 'travis_fold:start:coqeal.build'
 - echo -e '\e[33;1mBuilding CoqEAL\e[0m'
 - pushd theory && make -j ${NJOBS} && popd
-- pushd refinements && make -j ${NJOBS} && make OTHERFLAGS="-R ../theory CoqEAL.theory" && popd
+- pushd refinements && make -j ${NJOBS} && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} OTHERFLAGS="-R ../theory CoqEAL.theory" all && popd
 - echo -e 'travis_fold:end:coqeal.build'

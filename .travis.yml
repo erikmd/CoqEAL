@@ -1,0 +1,54 @@
+dist: trusty
+sudo: required
+language: c
+cache:
+  apt: true
+  directories:
+  - $HOME/.opam
+addons:
+  apt:
+    sources:
+    - avsm
+    packages:
+    - opam
+    - aspcud
+env:
+  global:
+  - NJOBS=2
+  - COMPILER="system"
+  # system <=> 4.02.3
+  - PARAMCOQ_URL="https://github.com/CohenCyril/paramcoq.git"
+  - PARAMCOQ_VERSION="8dbf3fc1a0a0e0177eb9d88f6b76b8eb0dc22889"
+  - MULTINOM_URL="https://github.com/math-comp/multinomials.git"
+  - MULTINOM_VERSION="5b46e50983ee68dd1b6932e7e4a3bfc1113e7360"
+  matrix:
+  - COQ_VERSION="8.5.3" SSR_VERSION="1.6.1"
+  - COQ_VERSION="8.6.1" SSR_VERSION="1.6.1"
+
+install:
+- opam init -j ${NJOBS} --compiler=${COMPILER} -n -y
+- eval $(opam config env)
+- opam config var root
+- opam repo add coq-released https://coq.inria.fr/opam/released
+- opam update
+- opam repo list
+- echo 'Building Coq and Mathcomp...' && echo -en 'travis_fold:start:mathcomp.build\\r'
+- opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION} coq-mathcomp-field.${SSR_VERSION}
+- echo -en 'travis_fold:end:mathcomp.build\\r'
+- opam list
+- echo 'Building Paramcoq...' && echo -en 'travis_fold:start:paramcoq.build\\r'
+# Not all branches have paramcoq folder currently
+- if [ ! -d paramcoq ]; then git clone --depth 50 -n ${PARAMCOQ_URL} paramcoq && pushd paramcoq && git checkout ${PARAMCOQ_VERSION} && popd; fi
+- pushd paramcoq && make -j ${NJOBS} && make install && popd
+- echo -en 'travis_fold:end:paramcoq.build\\r'
+- echo 'Building Multinomials...' && echo -en 'travis_fold:start:multinom.build\\r'
+- git clone --depth 50 -n ${MULTINOM_URL} multinom && pushd multinom && git checkout ${MULTINOM_VERSION} && popd
+- pushd multinom && make -j ${NJOBS} && make install && popd
+- echo -en 'travis_fold:end:multinom.build\\r'
+- ls -al
+
+script:
+- echo 'Building CoqEAL...' && echo -en 'travis_fold:start:coqeal.build\\r'
+- pushd theory && make -j ${NJOBS} && popd
+- pushd refinements && make -j ${NJOBS} && make OTHERFLAGS="-R ../theory CoqEAL.theory" && popd
+- echo -en 'travis_fold:end:coqeal.build\\r'

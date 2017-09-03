@@ -20,6 +20,8 @@ env:
   - PARAMCOQ_URL="https://github.com/CohenCyril/paramcoq.git"
   - MULTINOM_URL="https://github.com/math-comp/multinomials.git"
   - MULTINOM_VERSION="5b46e50983ee68dd1b6932e7e4a3bfc1113e7360"
+  - yellow="\\e[33;1m"
+  - dflt="\\e[0m"
   matrix:
   - COQ_VERSION="8.6.1" MATHCOMP_VERSION="1.6.1" PARAMCOQ_VERSION="8dbf3fc1a0a0e0177eb9d88f6b76b8eb0dc22889"
   - COQ_VERSION="8.5.3" MATHCOMP_VERSION="1.6.1" PARAMCOQ_VERSION="956d77ff6269159be5828fe8235d2e0dfb1b5987"
@@ -31,24 +33,37 @@ install:
 - opam repo add coq-released https://coq.inria.fr/opam/released || true
 - opam update
 - opam repo list
-- echo -e '\e[33;1mBuilding Coq...\e[0m'
-- travis_wait opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION}
-- echo -e '\e[33;1mBuilding Mathcomp...\e[0m'
-- opam install -j ${NJOBS} -y -v coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}
+- |
+  # Building Coq...
+  travis_wait opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION}
+
+- |
+  # Building Mathcomp...
+  opam install -j ${NJOBS} -y -v coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}
+
 - opam list
-- echo -e '\e[33;1mBuilding Paramcoq...\e[0m' && echo -en 'travis_fold:start:paramcoq.build\\r'
-# Some branches have no paramcoq dir & paramcoq isn't Coq-version cross-compat.
-# if [ ! -d paramcoq ]; then git clone --depth 50 -n ${PARAMCOQ_URL} paramcoq && pushd paramcoq && git checkout ${PARAMCOQ_VERSION} && popd; fi
-- git clone --depth 50 -n ${PARAMCOQ_URL} $HOME/paramcoq && pushd $HOME/paramcoq && git checkout ${PARAMCOQ_VERSION} && popd
-- pushd $HOME/paramcoq && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
-- echo -en 'travis_fold:end:paramcoq.build\\r'
-- echo -e '\e[33;1mBuilding Multinomials...\e[0m' && echo -en 'travis_fold:start:multinom.build\\r'
-- git clone --depth 50 -n ${MULTINOM_URL} $HOME/multinom && pushd $HOME/multinom && git checkout ${MULTINOM_VERSION} && popd
-- pushd $HOME/multinom && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
-- echo -en 'travis_fold:end:multinom.build\\r'
+- |
+  # Building Paramcoq...
+  if [ -d paramcoq ] && [ -z "${PARAMCOQ_VERSION}" ]; then
+      echo 'Building bundled version of paramcoq...'
+      pushd paramcoq && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
+  else
+      echo 'Cloning and building paramcoq...
+      git clone --depth 50 -n ${PARAMCOQ_URL} $HOME/paramcoq
+      if [ -n "${PARAMCOQ_VERSION}" ]; then
+          pushd $HOME/paramcoq && git checkout ${PARAMCOQ_VERSION} && popd
+      fi
+      pushd $HOME/paramcoq && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
+  fi
+
+- |
+  # Building Multinomials...
+  git clone --depth 50 -n ${MULTINOM_URL} $HOME/multinom
+  pushd $HOME/multinom && git checkout ${MULTINOM_VERSION} && popd
+  pushd $HOME/multinom && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
 
 script:
-- echo -e '\e[33;1mBuilding CoqEAL...\e[0m' && echo -en 'travis_fold:start:coqeal.build\\r'
+- echo -e "${yellow}Building CoqEAL...${dflt}" && echo -en 'travis_fold:start:coqeal.build\\r'
 - pushd theory && make -j ${NJOBS} && popd
 - pushd refinements && make -j ${NJOBS} && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} OTHERFLAGS="-R ../theory CoqEAL.theory" all && popd
 - echo -en 'travis_fold:end:coqeal.build\\r'

@@ -31,26 +31,24 @@ install:
 - opam repo add coq-released https://coq.inria.fr/opam/released || true
 - opam update
 - opam repo list
-- echo -e '\e[33;1mBuilding Coq\e[0m' && echo -en 'travis_fold:start:coq.build\\r'
+- echo -e '\e[33;1mBuilding Coq...\e[0m'
 - travis_wait opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION}
-- echo -en 'travis_fold:end:coq.build\\r'
-- echo -e '\e[33;1mBuilding Mathcomp\e[0m' && echo -en 'travis_fold:start:mathcomp.build\\r'
+- echo -e '\e[33;1mBuilding Mathcomp...\e[0m'
 - opam install -j ${NJOBS} -y -v coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}
-- echo -en 'travis_fold:end:mathcomp.build\\r'
 - opam list
-- echo -e '\e[33;1mBuilding Paramcoq\e[0m' && echo -en 'travis_fold:start:paramcoq.build\\r'
+- echo -e '\e[33;1mBuilding Paramcoq...\e[0m' && echo -en 'travis_fold:start:paramcoq.build\\r'
 # Some branches have no paramcoq dir & paramcoq isn't Coq-version cross-compat.
 # if [ ! -d paramcoq ]; then git clone --depth 50 -n ${PARAMCOQ_URL} paramcoq && pushd paramcoq && git checkout ${PARAMCOQ_VERSION} && popd; fi
 - git clone --depth 50 -n ${PARAMCOQ_URL} $HOME/paramcoq && pushd $HOME/paramcoq && git checkout ${PARAMCOQ_VERSION} && popd
-- pushd $HOME/paramcoq && make -j ${NJOBS} && make install && popd
+- pushd $HOME/paramcoq && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
 - echo -en 'travis_fold:end:paramcoq.build\\r'
-- echo -e '\e[33;1mBuilding Multinomials\e[0m' && echo -en 'travis_fold:start:multinom.build\\r'
+- echo -e '\e[33;1mBuilding Multinomials...\e[0m' && echo -en 'travis_fold:start:multinom.build\\r'
 - git clone --depth 50 -n ${MULTINOM_URL} $HOME/multinom && pushd $HOME/multinom && git checkout ${MULTINOM_VERSION} && popd
-- pushd $HOME/multinom && make -j ${NJOBS} && make install && popd
+- pushd $HOME/multinom && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
 - echo -en 'travis_fold:end:multinom.build\\r'
 
 script:
-- echo -e '\e[33;1mBuilding CoqEAL\e[0m' && echo -en 'travis_fold:start:coqeal.build\\r'
+- echo -e '\e[33;1mBuilding CoqEAL...\e[0m' && echo -en 'travis_fold:start:coqeal.build\\r'
 - pushd theory && make -j ${NJOBS} && popd
 - pushd refinements && make -j ${NJOBS} && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} OTHERFLAGS="-R ../theory CoqEAL.theory" all && popd
 - echo -en 'travis_fold:end:coqeal.build\\r'

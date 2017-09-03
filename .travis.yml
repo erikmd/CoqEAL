@@ -32,7 +32,7 @@ install:
 - opam update
 - opam repo list
 - echo -e '\e[33;1mBuilding Coq\e[0m' && echo -en 'travis_fold:start:coq.build\\r'
-- opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION}
+- travis_wait opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION}
 - echo -en 'travis_fold:end:coq.build\\r'
 - echo -e '\e[33;1mBuilding Mathcomp\e[0m' && echo -en 'travis_fold:start:mathcomp.build\\r'
 - opam install -j ${NJOBS} -y -v coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}

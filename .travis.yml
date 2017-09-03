@@ -33,15 +33,15 @@ install:
 - opam repo add coq-released https://coq.inria.fr/opam/released || true
 - opam update
 - opam repo list
-# The 'travis_wait' commands below extend the 10 mn, no-output timeout to 20 mn
+# The 'travis_wait' command below extends the 10 mn, no-output timeout to 20 mn
 - |
   # Building Coq...
   travis_wait opam install -j ${NJOBS} -y ocamlfind camlp5 coq.${COQ_VERSION}
 
-# The '-v' opam flag would be another way to avoid the 10 mn, no-output timeout
+# The '-v' flag below is another solution to avoid the 10 mn, no-output timeout
 - |
   # Building Mathcomp...
-  travis_wait opam install -j ${NJOBS} -y coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}
+  opam install -j ${NJOBS} -y -v coq.${COQ_VERSION} coq-mathcomp-field.${MATHCOMP_VERSION}
 
 - opam list
 - |

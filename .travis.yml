@@ -47,10 +47,10 @@ install:
 - |
   # Building Paramcoq...
   if [ -d paramcoq ] && [ -z "${PARAMCOQ_VERSION}" ]; then
-      echo 'Building bundled version of paramcoq...'
+      echo '# Building BUNDLED version of paramcoq...'
       pushd paramcoq && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} && make install && popd
   else
-      echo 'Cloning and building paramcoq...'
+      echo '# CLONING and building paramcoq...'
       git clone --depth 50 -n ${PARAMCOQ_URL} $HOME/paramcoq
       if [ -n "${PARAMCOQ_VERSION}" ]; then
           pushd $HOME/paramcoq && git checkout ${PARAMCOQ_VERSION} && popd

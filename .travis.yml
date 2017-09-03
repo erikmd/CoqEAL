@@ -29,29 +29,25 @@ install:
 - opam init -j ${NJOBS} --compiler=${COMPILER} -n -y
 - eval $(opam config env)
 - opam config var root
-- opam repo add coq-released https://coq.inria.fr/opam/released
+- opam repo add coq-released https://coq.inria.fr/opam/released || true
 - opam update
 - opam repo list
-- echo -e 'travis_fold:start:mathcomp.build'
-- echo -e '\e[33;1mBuilding Coq and Mathcomp\e[0m'
+- echo -e 'travis_fold:start:mathcomp.build' && echo -e '\e[33;1mBuilding Coq and Mathcomp\e[0m'
 - opam install -j ${NJOBS} -y -v ocamlfind camlp5 coq.${COQ_VERSION} coq-mathcomp-field.${SSR_VERSION}
 - echo -e 'travis_fold:end:mathcomp.build'
 - opam list
-- echo -e 'travis_fold:start:paramcoq.build'
-- echo -e '\e[33;1mBuilding Paramcoq\e[0m'
+- echo -e 'travis_fold:start:paramcoq.build' && echo -e '\e[33;1mBuilding Paramcoq\e[0m'
 # Not all branches have paramcoq folder currently
 - if [ ! -d paramcoq ]; then git clone --depth 50 -n ${PARAMCOQ_URL} paramcoq && pushd paramcoq && git checkout ${PARAMCOQ_VERSION} && popd; fi
 - pushd paramcoq && make -j ${NJOBS} && make install && popd
 - echo -e 'travis_fold:end:paramcoq.build'
-- echo -e 'travis_fold:start:multinom.build'
-- echo -e '\e[33;1mBuilding Multinomials\e[0m'
+- echo -e 'travis_fold:start:multinom.build' && echo -e '\e[33;1mBuilding Multinomials\e[0m'
 - git clone --depth 50 -n ${MULTINOM_URL} multinom && pushd multinom && git checkout ${MULTINOM_VERSION} && popd
 - pushd multinom && make -j ${NJOBS} && make install && popd
 - echo -e 'travis_fold:end:multinom.build'
 
 script:
-- echo -e 'travis_fold:start:coqeal.build'
-- echo -e '\e[33;1mBuilding CoqEAL\e[0m'
+- echo -e 'travis_fold:start:coqeal.build' && echo -e '\e[33;1mBuilding CoqEAL\e[0m'
 - pushd theory && make -j ${NJOBS} && popd
 - pushd refinements && make -j ${NJOBS} && make Makefile.coq && make -f Makefile.coq -j ${NJOBS} OTHERFLAGS="-R ../theory CoqEAL.theory" all && popd
 - echo -e 'travis_fold:end:coqeal.build'
